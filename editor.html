@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Rephrase</title>
+    <script type="text/javascript" src="llac.js"></script>
+    <script type="text/javascript" src="WordMatrix.js"></script>
+    <script type="text/javascript" src="Rephrase.js"></script>
+    <style>
+        .rephrase{
+            display: block;
+            margin: 10px;
+            margin-left:0;
+            padding: 10px;
+            border-left: 10px solid greenyellow;
+            color: black;
+            line-height: 30px;
+        }
+        .rephrase.empty {
+            border-left-color:hsl(234, 10%, 97%);
+            color: hsl(234, 10%, 80%);
+        }
+        .rephrase.hide {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            line-height: 0;
+        }
+        .rephrase.empty.hide > .rephrase-name{
+            display: none;
+        }
+        .phrase{
+            display: block;
+            padding: 5px;
+        }
+        .phrases{
+            cursor: pointer;
+        }
+        .rephrase > .rephrase-name:hover,
+        .rephrase > .phrases:hover{
+            background-color: hsla(85, 100%, 47%, 0.1);
+        }
+        .rephrase-name {
+            display: block;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        html, body {
+            width: 100vw;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            position: relative;
+            background-color:aliceblue;
+            display: grid;
+            grid-template-columns: 1em auto 1em;
+            grid-template-rows: 1em auto 1em;
+            grid-template-areas: "top top top"
+            "left middle right"
+            "bottom bottom bottom";
+            background-color: hsl(234, 60%, 50%);
+            font-kerning: normal;
+            font-family: Helvetica, Arial, sans-serif;
+        }
+        .page{
+            grid-area: middle;
+            position: relative;
+        }
+        .header{
+            position: absolute;
+            top:0;
+            height: 90px;
+            overflow: hidden;
+            width: 100%;
+            display: grid;
+            grid-template-rows: auto;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-areas: "title menu1 menu2 menu3"
+            "title menu1 menu2 menu3";
+            border-radius: 6px;
+            color: hsl(214, 60%, 90%);
+            line-height: 30px;
+        }
+        .header h1{
+            grid-area: title;
+            font-size: 45px;
+            margin: 0;
+            padding-left: 10px;
+            padding-top: 45px;
+            line-height: 45px;
+            font-weight: normal;
+            color: white;
+            background-color: hsl(234, 60%, 50%);
+            letter-spacing: 0;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            min-width: 7em;
+        }
+        .header h1 span{
+            color: hsl(214, 60%, 90%);
+        }
+        .header label{
+            display: block;
+            margin: 10px;
+        }
+        .header .menu1{
+            grid-area: menu1;
+            background-color: hsl(234, 60%, 47%);
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+            margin-left: -6px;
+        }
+        .header .menu2{
+            grid-area: menu2;
+            background-color: hsl(234, 60%, 40%);
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+            margin-left: -6px;
+        }
+        .header .menu3{
+            grid-area: menu3;
+            background-color: hsl(234, 60%, 34%);
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+            margin-left: -6px;
+        }
+        .path {
+            position: absolute;
+            top: 100px;
+            height: 50px;
+            left: 0;
+            right: 0;
+            width: auto;
+            background-color: hsl(90, 0%, 95%);
+            border-radius: 5px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            display: grid;
+            grid-template-columns: 1fr 3fr 100px 100px;
+            grid-template-areas: "name path load save";
+            position: relative;
+        }
+        
+        .path .subdomain,
+        .path .directory{
+            margin: 10px;
+            border: 0;
+            background-color: hsl(90, 0%, 97%);
+            font-size: 20px;
+            line-height: 30px;
+            text-align: center;
+            outline: none;
+        }
+       
+        .path .subdomain {
+            grid-area: name;
+            text-indent: 10px;
+            margin-right: 0;
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+            font-weight: bold;
+        }
+        .path .directory {
+            grid-area: path;
+            margin-left: 0;
+            border-left: 3px solid hsla(234, 20%, 70%, 0.5);
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .path .load{
+            grid-area: load;
+            background-color:hsla(234, 20%, 70%, 0.5);
+            
+        }
+        .path .load:hover{
+            background-color: hsl(234, 20%, 70%);
+        }
+        .path .save{
+            grid-area: save;
+            background-color:hsla(85, 100%, 47%, 0.5);
+        }
+        .path .save:hover{
+            background-color: hsl(85, 100%, 47%);
+            
+        }
+        .path .load,
+        .path .save{
+            margin: 10px 10px 10px 0;
+            border-radius: 10px;
+            border: 0;
+            font-size: 15px;
+            color: hsl(0,0%,0%,0.5);
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+        }
+        .path .subdomain:focus,
+        .path .directory:focus,
+        .path .subdomain:hover,
+        .path .directory:hover{
+            background-color: hsl(90, 0%, 99%);
+        }
+        .rephrases{
+            position: absolute;
+            top: 145px;
+            bottom: 40px;
+            height: auto;
+            left: 0;
+            right: 0;
+            width: auto;
+            overflow-y: auto;
+            background-color:white;
+            padding: 0 10px;
+            border-radius: 5px;
+            border: 5px solid hsl(90, 0%, 95%);
+            line-height: 20px;
+        }
+        .input{
+            position: absolute;
+            bottom: 0;
+            height: 30px;
+            width: 100%;
+            background-color: aliceblue;
+            display: grid;
+            grid-template-rows: 1fr;
+            grid-template-columns: 1fr;
+            grid-template-areas: 
+            "name";
+            background-color: greenyellow;
+            border-radius: 3px;
+        }
+        #data-input,
+        #name-input{
+            text-indent: 10px;
+            font-size: 12px;
+            background-color: hsl(90, 100%, 95%);
+            border:0;
+            outline: none;
+            border-radius: 3px;
+        }
+        #name-input:focus,
+        #data-input:focus{
+            background-color: hsl(90, 100%, 85%);
+        }
+        #name-input{
+            grid-area: name;
+        }
+        #data-input{
+            grid-area: data;
+            border-left: 3px solid greenyellow;
+        }
+        #name-label{
+            grid-area: name;
+            display: grid;
+            grid-template-columns: 1fr 2fr 120px;
+            grid-template-areas: "input data button";
+            font-size: 1.8em;
+            line-height: 1.8em;
+        }
+        #add-button{
+            grid-area: button;
+            background-color: transparent;
+            font-weight: bold;
+            border: 0;
+            outline: none;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        #add-button:focus{
+            background-color: hsl(85, 100%, 47%);
+        }
+        #name-input{
+            grid-area: input;
+        }
+        .topline, .left, .right{
+            background-color: greenyellow;
+        }
+        .topline{
+            grid-area: topline;
+        }
+        .right{
+            grid-area: right;
+        }
+        .left{
+            grid-area: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>Rephrase<span>.live</spanh1></h1>
+            <div class="menu1">
+            </div>
+            <div class="menu2">
+                    <label for="form-cols-toggle"><input type="checkbox" id="form-cols-toggle" tabindex="1"> Display In Columns</label>
+            </div>
+            <div class="menu3">
+                    <label for="hide-empty-toggle"><input type="checkbox" id="hide-empty-toggle" tabindex="2"> Hide Empty Branches</label>
+                    <label for="sort-desc-toggle"><input type="checkbox" id="sort-desc-toggle" tabindex="3"> Sort Descending</label>
+            </div>
+        </div>
+        <div class="path"><input type="text" class="subdomain" tabindex="4"><input type="text" class="directory" tabindex="5"><button class="load" tabindex="6">Load</button><button class="save" tabindex="7">Save</button></div>
+        <div class="rephrases"></div>
+        <form class="input">
+            <label id="name-label"><input id="name-input" type="text" autocomplete="off" placeholder="Enter a Name for the Data. Use spaces to seperate words." tabindex="8" autofocus><input id="data-input" type="text" autocomplete="off" tabindex="9" placeholder="Enter the Value of the Data. A list should start and end with the token used to seperate the list items"><input type="submit" value="Change Data" class="button" id="add-button" tabindex="10"></label>
+        </form>
+    </div>
+    
+    <script type="text/javascript">
+        var rephrase = new Rephrase();
+
+        var settings = {};
+        settings.hideEmpty = false;
+        settings.sortDesc = false;
+        settings.formColumns = false;
+
+        // Maybe here I can load query variables to change settings
+
+        var pageElement = document.querySelector('.rephrases');
+
+        var inputForm = document.querySelector('.input');
+        var nameInput = inputForm.querySelector('#name-input');
+        var dataInput = inputForm.querySelector('#data-input');
+
+        var submitButton = inputForm.querySelector('#add-button');
+
+        var pathSubdomain = document.querySelector('.path .subdomain');
+        var pathDirectory = document.querySelector('.path .directory');
+
+        //pathSubdomain.value = "unsaved";
+        //pathDirectory.value = "temp";
+
+        submitButton.addEventListener('focus', function(e){
+            e.preventDefault();
+            nameInput.focus();
+        })
+
+        var hideEmptyToggle = document.querySelector('#hide-empty-toggle');
+
+        hideEmptyToggle.addEventListener('change', function(){
+            settings.hideEmpty = !!hideEmptyToggle.checked;
+            rephrase.render(pageElement);
+        });
+
+        var sortDescToggle = document.querySelector('#sort-desc-toggle');
+
+        sortDescToggle.addEventListener('change', function(){
+            settings.sortDesc = !!sortDescToggle.checked;
+            rephrase.render(pageElement);
+        });
+
+        var formColumnsToggle = document.querySelector('#form-cols-toggle');
+
+        formColumnsToggle.addEventListener('change', function(){
+            settings.formColumns = !!formColumnsToggle.checked;
+            rephrase.render(pageElement);
+        });
+
+        var seperators = ' !@#$%^&*()~`_-+=][{}|\:;\'"?/><.,';
+
+        function findUniqueSeperator(inputText, randomize){
+            var found = '';
+            if(Array.isArray(inputText)) inputText = inputText.join('');
+            inputText = inputText.toString();
+            if(randomize){}
+            for(var i=0; i<seperators.length; i++){
+                if(inputText.indexOf(seperators[i])==-1){
+                    if(randomize){
+                        found += seperators[i];
+                        continue;
+                    }
+                    return seperators[i];
+                }
+            }
+            if(randomize && found.length){
+                var r = Math.floor(found.length * Math.random());
+                return found[r];
+            }
+            return false;
+        }
+
+        function findRandomUniqueToken(inputText, length){
+            if(Array.isArray(inputText)) inputText = inputText.join('');
+            inputText = inputText.toString();
+            function randomToken(length){
+                var token = "";
+                for(var r, i = 0; i < length; i++){
+                    r = Math.floor(seperators.length * Math.random());
+                    token = token+seperators[r];
+                }
+                return token;
+            }
+            if(!length) length = 2;
+            if(length == 1){
+                var seperator = findUniqueSeperator(inputText, true);
+                if(seperator) return seperator;
+                else length++;
+            }
+            var token = randomToken(length);
+            var count = 0;
+            var totalCount = 0;
+            while(inputText.indexOf(token) > -1){
+                token = randomToken(length)
+                count++;
+                totalCount++;
+                if(count >= 100){
+                    count = 0;
+                    length++;
+                }
+            }
+            return token;
+        }
+
+        function loadData(data){
+            if(Rephrase.isEmpty(data)){
+                dataInput.value = "";
+            }else{
+                if(data.length === 1){
+                    dataInput.value = data[0];
+                }else{
+                    var token = findRandomUniqueToken(data, 1);
+                    if(!token){
+                        token = "{[<ABC>]}";
+                        var flatData = data.join('');
+                        var msg = 'We were unable to find a random sequence of characters to use for a token.\nPlease enter a sequence of characters that doesn\'t appear in the list text to use as a seperator.';
+                        while(typeof token == 'string' && token.length && flatData.indexOf(token)>-1){
+                            if(token!="{[<ABC>]}") msg = "The token you entered was found in the text, please try again:";
+                            token = prompt(msg, token)
+                        }
+                    }
+                    if(typeof token == 'string' && token.length){
+                        dataInput.value = token+data.join(token)+token;
+                    }
+                }
+            }
+        }
+
+        rephrase.render = function(parent){
+            var phrases = Rephrase.WordMatrix.getPhrases(this.data);
+            phrases.sort();
+
+            if(settings.sortDesc){
+                phrases = phrases.reverse();
+            }
+
+            parent = parent || document.body;
+
+            parent.innerHTML = "";
+            
+            var elements = {};
+
+            function findChildren(name){
+                var children = [];
+                for(var key in elements){
+                    if(key.indexOf(name+' ')==0 && key.slice(name.length+1).indexOf(' ') < 0){
+                        children.push(key);
+                    }
+                }
+                return children;
+            }
+
+            phrases.forEach(function(name){
+                var data = rephrase.data(name)();
+                var div = document.createElement('div');
+                div.className = 'rephrase';
+                div.id = 'data:'+name;
+                
+                if(settings.formColumns){
+                    div.style.display = "inline-block";
+                    div.style.verticalAlign = "text-top";
+                }
+
+                var phrase = document.createTextNode(name?name:'Rephrase');
+                var span = document.createElement('span');
+                span.className = 'rephrase-name';
+                span.appendChild(phrase);
+                span.addEventListener('click', function(e){
+                    nameInput.value = name?name:'Rephrase';
+                    loadData(data);
+                    dataInput.focus();
+                });
+                div.appendChild(span);                
+
+                var phrases = document.createElement('div');
+                    phrases.className = 'phrases';
+                if(!Rephrase.isEmpty(data)){
+                    data.forEach(function(text){
+                        var phrase = document.createTextNode(text);
+                        var span = document.createElement('span');
+                        span.className = 'phrase';
+                        span.appendChild(phrase);
+                        phrases.appendChild(span);
+                    });
+                    phrases.addEventListener('click', function(e){
+                        loadData(data);
+                        dataInput.focus();
+                    });
+                }else{
+                    div.className = 'rephrase empty'+(settings.hideEmpty?' hide':'');
+                }
+                div.appendChild(phrases);
+                elements[name] = div;
+
+                var children = findChildren(name);
+                if(children.length){
+                    children.sort();
+                    if(settings.sortDesc){
+                        children = children.reverse();
+                    }
+                    children.forEach(function(name){
+                        div.appendChild(elements[name]);
+                    })
+                }
+
+                var parentName = name.split(' ').slice(0,-1).join(" ");
+                if(name !== parentName && elements[parentName]){
+                    elements[parentName].appendChild(div);
+                }else{
+                    parent.appendChild(div);
+                }
+            });
+        }
+        function insertAfter(newNode, referenceNode) {
+            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        }
+        rephrase.onSetData(function(name, data, metadata){
+            rephrase.render(pageElement);
+        });
+
+        
+        inputForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            
+            if(nameInput.value.length){
+                rephrase.data(nameInput.value)(dataInput.value, true);
+            }
+        });
+
+        nameInput.addEventListener('keyup', function(e){
+            var name = nameInput.value;
+            var data = [];
+            if(Rephrase.WordMatrix.hasPhrase(rephrase.data, name)) data = rephrase.data(name)();
+            if(!Rephrase.isEmpty(data)){
+                loadData(data);
+            }
+        });
+    </script>
+</body>
+</html>
