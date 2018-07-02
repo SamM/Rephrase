@@ -205,7 +205,7 @@
         .rephrases{
             position: absolute;
             top: 145px;
-            bottom: 40px;
+            bottom: 50px;
             height: auto;
             left: 0;
             right: 0;
@@ -221,35 +221,61 @@
             position: absolute;
             bottom: 0;
             height: 30px;
-            width: 100%;
+            left: 0;
+            right: 0;
+            width: auto;
             background-color: aliceblue;
             display: grid;
             grid-template-rows: 1fr;
             grid-template-columns: 1fr;
             grid-template-areas: 
             "name";
-            background-color: greenyellow;
+            background-color: hsl(90, 0%, 85%);
             border-radius: 3px;
+            border-radius: 5px;
+            border: 5px solid hsl(90, 0%, 85%);
         }
         #data-input,
         #name-input{
             text-indent: 10px;
             font-size: 12px;
-            background-color: hsl(90, 100%, 95%);
             border:0;
             outline: none;
             border-radius: 3px;
-        }
-        #name-input:focus,
-        #data-input:focus{
-            background-color: hsl(90, 100%, 85%);
         }
         #name-input{
             grid-area: name;
         }
         #data-input{
             grid-area: data;
+        }
+        /* Input Active Toggle */
+        .input.active,
+        .input:hover{
+            background-color: greenyellow;
+            border: 5px solid greenyellow;
+        }
+        .input #data-input,
+        .input:hover #data-input{
+            border-left: 3px solid hsl(90, 0%, 85%);
+        }
+        .input.active #data-input,
+        .input:hover #data-input{
             border-left: 3px solid greenyellow;
+        }
+        .input #data-input,
+        .input #name-input,{
+            background-color: hsl(90, 0%, 95%);
+        }
+        .input.active #data-input,
+        .input.active #name-input,
+        .input:hover #data-input,
+        .input:hover #name-input{
+            background-color: hsl(90, 100%, 95%);
+        }
+        #name-input:focus,
+        #data-input:focus{
+            background-color: hsl(90, 100%, 85%)!important;
         }
         #name-label{
             grid-area: name;
@@ -269,8 +295,8 @@
             border-radius: 3px;
             font-size: 12px;
         }
-        #add-button:focus{
-            background-color: hsl(85, 100%, 47%);
+        #add-button:hover{
+            background-color: hsla(82, 100%, 0%, 0.06);
         }
         #name-input{
             grid-area: input;
@@ -334,6 +360,21 @@
         //pathSubdomain.value = "unsaved";
         //pathDirectory.value = "temp";
 
+        function ActivateInput(){
+            inputForm.className = "input active";
+        }
+        function DeactivateInput(){
+            inputForm.className = "input";
+        }
+
+        nameInput.addEventListener('focus', ActivateInput)
+
+        nameInput.addEventListener('blur', DeactivateInput)
+
+        dataInput.addEventListener('focus', ActivateInput)
+
+        dataInput.addEventListener('blur', DeactivateInput)
+
         submitButton.addEventListener('focus', function(e){
             e.preventDefault();
             nameInput.focus();
@@ -360,7 +401,7 @@
             rephrase.render(pageElement);
         });
 
-        var seperators = ' !@#$%^&*()~`_-+=][{}|\:;\'"?/><.,';
+        var seperators = ' !@#$%^&*()~-+=][{}|\:;\?/><.,';
 
         function findUniqueSeperator(inputText, randomize){
             var found = '';
